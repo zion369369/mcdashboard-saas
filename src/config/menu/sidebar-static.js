@@ -10,6 +10,10 @@ const sidebarMenu = () => [
         path: `/account`,
       },
       {
+        name: 'Weather Parser',
+        path: `/weather`,
+      },
+      {
         name: 'common.label.billing',
         path: `/account/billing`,
       },

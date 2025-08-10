@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 
@@ -21,6 +21,24 @@ const Welcome = () => {
   const { setWorkspace } = useWorkspace();
   const { t } = useTranslation();
   const [isSubmitting, setSubmittingState] = useState(false);
+  const [weatherStatus, setWeatherStatus] = useState(null);
+
+  // Fetch weather status for preview
+  useEffect(() => {
+    const fetchWeatherStatus = async () => {
+      try {
+        const response = await fetch('/api/weather/status');
+        const result = await response.json();
+        if (result.success) {
+          setWeatherStatus(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching weather status:', error);
+      }
+    };
+
+    fetchWeatherStatus();
+  }, []);
 
   const accept = (memberId) => {
     setSubmittingState(true);
@@ -97,6 +115,73 @@ const Welcome = () => {
           )}
         </div>
       </Content.Container>
+      
+      {/* Weather Preview Section */}
+      <Content.Divider thick />
+      <Content.Title
+        title="PAGASA Weather Parser"
+        subtitle="Real-time tropical cyclone bulletin parsing and analysis"
+      />
+      <Content.Divider />
+      <Content.Container>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <Card.Body 
+              title="Parser Status" 
+              subtitle={weatherStatus ? weatherStatus.systemHealth.parserStatus : 'Loading...'}
+            />
+            <Card.Footer>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                weatherStatus?.systemHealth?.parserStatus === 'Operational' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-gray-100 text-gray-800'
+              }`}>
+                {weatherStatus ? weatherStatus.systemHealth.parserStatus : '...'}
+              </span>
+            </Card.Footer>
+          </Card>
+
+          <Card>
+            <Card.Body 
+              title="Active Cyclones" 
+              subtitle={weatherStatus ? `${weatherStatus.activeCyclones.length} active` : 'Loading...'}
+            />
+            <Card.Footer>
+              <span className="text-blue-600 text-sm">
+                {weatherStatus ? `${weatherStatus.totalAreasAffected} areas affected` : '...'}
+              </span>
+            </Card.Footer>
+          </Card>
+
+          <Card>
+            <Card.Body 
+              title="Parse Stats" 
+              subtitle={weatherStatus ? `${weatherStatus.parserStats.successfulParses} successful` : 'Loading...'}
+            />
+            <Card.Footer>
+              <span className="text-green-600 text-sm">
+                {weatherStatus ? `${weatherStatus.parserStats.averageParseTime} avg time` : '...'}
+              </span>
+            </Card.Footer>
+          </Card>
+
+          <Card>
+            <Card.Body 
+              title="Weather Parser" 
+              subtitle="Parse PAGASA bulletins"
+            />
+            <Card.Footer>
+              <button
+                className="text-blue-600 hover:text-blue-800"
+                onClick={() => router.push('/weather')}
+              >
+                Open Parser &rarr;
+              </button>
+            </Card.Footer>
+          </Card>
+        </div>
+      </Content.Container>
+
       <Content.Divider thick />
       <Content.Title
         title={t("workspace.dashboard.header.invitations.title")}
