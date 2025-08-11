@@ -22,6 +22,7 @@ const Welcome = () => {
   const { t } = useTranslation();
   const [isSubmitting, setSubmittingState] = useState(false);
   const [weatherStatus, setWeatherStatus] = useState(null);
+  const [maritimeStatus, setMaritimeStatus] = useState(null);
 
   // Fetch weather status for preview
   useEffect(() => {
@@ -37,7 +38,20 @@ const Welcome = () => {
       }
     };
 
+    const fetchMaritimeStatus = async () => {
+      try {
+        const response = await fetch('/api/maritime/status');
+        const result = await response.json();
+        if (result.success) {
+          setMaritimeStatus(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching maritime status:', error);
+      }
+    };
+
     fetchWeatherStatus();
+    fetchMaritimeStatus();
   }, []);
 
   const accept = (memberId) => {
@@ -176,6 +190,72 @@ const Welcome = () => {
                 onClick={() => router.push('/weather')}
               >
                 Open Parser &rarr;
+              </button>
+            </Card.Footer>
+          </Card>
+        </div>
+      </Content.Container>
+
+      {/* Maritime Preview Section */}
+      <Content.Divider thick />
+      <Content.Title
+        title="Maritime AIS Tracking"
+        subtitle="Real-time vessel tracking and monitoring via AIS Stream"
+      />
+      <Content.Divider />
+      <Content.Container>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <Card.Body 
+              title="AIS Stream" 
+              subtitle={maritimeStatus ? maritimeStatus.aisStreamStatus.apiStatus : 'Loading...'}
+            />
+            <Card.Footer>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                maritimeStatus?.aisStreamStatus?.apiStatus === 'Online' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-gray-100 text-gray-800'
+              }`}>
+                {maritimeStatus ? `${maritimeStatus.aisStreamStatus.messagesPerSecond}/sec` : '...'}
+              </span>
+            </Card.Footer>
+          </Card>
+
+          <Card>
+            <Card.Body 
+              title="Vessels Tracked" 
+              subtitle={maritimeStatus ? `${maritimeStatus.trackingStats.totalVesselsTracked.toLocaleString()} active` : 'Loading...'}
+            />
+            <Card.Footer>
+              <span className="text-blue-600 text-sm">
+                {maritimeStatus ? `${maritimeStatus.trackingStats.connectionCount} connections` : '...'}
+              </span>
+            </Card.Footer>
+          </Card>
+
+          <Card>
+            <Card.Body 
+              title="Coverage" 
+              subtitle={maritimeStatus ? `${maritimeStatus.coverage.globalCoverage} global` : 'Loading...'}
+            />
+            <Card.Footer>
+              <span className="text-green-600 text-sm">
+                {maritimeStatus ? `${maritimeStatus.coverage.majorPorts.length} major ports` : '...'}
+              </span>
+            </Card.Footer>
+          </Card>
+
+          <Card>
+            <Card.Body 
+              title="Maritime Tracker" 
+              subtitle="Monitor vessel movements"
+            />
+            <Card.Footer>
+              <button
+                className="text-blue-600 hover:text-blue-800"
+                onClick={() => router.push('/maritime')}
+              >
+                Open Tracker &rarr;
               </button>
             </Card.Footer>
           </Card>

@@ -14,6 +14,10 @@ const sidebarMenu = () => [
         path: `/weather`,
       },
       {
+        name: 'Maritime Tracking',
+        path: `/maritime`,
+      },
+      {
         name: 'common.label.billing',
         path: `/account/billing`,
       },
